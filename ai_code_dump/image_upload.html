@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload with Preview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        #drop-zone {
+            border: 4px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            margin: 20px auto;
+            max-width: 800px;
+            background: #fff;
+            cursor: pointer;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        #drop-zone.highlight {
+            background: #e0f7fa;
+            border-color: #00acc1;
+        }
+        #drop-zone p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 18px;
+        }
+        #file-input {
+            display: none;
+        }
+        #preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px auto;
+            max-width: 1200px;
+        }
+        .preview-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .preview-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        @media (max-width: 600px) {
+            #preview {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Images</h1>
+    <div id="drop-zone">
+        <p>Drag & drop images here</p>
+        <p>or</p>
+        <p><strong>Click to select files</strong></p>
+        <input type="file" id="file-input" accept="image/*" multiple>
+    </div>
+
+    <div id="preview"></div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const preview = document.getElementById('preview');
+
+        // Click to open file picker
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Handle file selection via input
+        fileInput.addEventListener('change', handleFiles);
+
+        // Drag and drop events
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('highlight');
+        });
+
+        ['dragleave', 'dragend'].forEach(event => {
+            dropZone.addEventListener(event, () => {
+                dropZone.classList.remove('highlight');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('highlight');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+
+            [...files].forEach(file => {
+                if (!file.type.startsWith('image/')) return; // Only images
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const item = document.createElement('div');
+                    item.classList.add('preview-item');
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = '×';
+                    removeBtn.classList.add('remove-btn');
+                    removeBtn.onclick = () => item.remove();
+
+                    item.appendChild(img);
+                    item.appendChild(removeBtn);
+                    preview.appendChild(item);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+</body>
+</html>
